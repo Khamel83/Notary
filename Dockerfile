@@ -1,5 +1,5 @@
-# Use Node.js 20 Alpine for smaller image size
-FROM node:20-alpine AS base
+# Use Node.js 18 Alpine for better compatibility
+FROM node:18-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -7,17 +7,16 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install all dependencies (including dev dependencies for build tools)
+# Install dependencies
 COPY package.json package-lock.json* ./
 COPY .npmrc ./
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-COPY .npmrc ./
 
 # Generate Prisma client and build the application
 RUN npx prisma generate && npm run build
@@ -39,19 +38,15 @@ COPY --from=builder /app/public ./public
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Copy all dependencies from builder (includes production deps)
-COPY --from=builder /app/node_modules ./node_modules
-
-# Automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy production dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./
 
 USER nextjs
 
 EXPOSE 3000
 
 ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
 
 # Start the application
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
