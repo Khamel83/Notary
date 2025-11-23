@@ -6,7 +6,7 @@ import { sendBookingConfirmation } from '@/lib/email';
 import { sendBookingConfirmationSMS } from '@/lib/sms';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-02-24.acacia',
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -14,7 +14,8 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
-    const signature = headers().get('stripe-signature');
+    const headersList = await headers();
+    const signature = headersList.get('stripe-signature');
 
     if (!signature) {
       return NextResponse.json(
