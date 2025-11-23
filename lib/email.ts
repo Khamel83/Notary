@@ -12,6 +12,7 @@ interface BookingConfirmationEmail {
   numberOfSignatures: number;
   totalAmount: number;
   receiptUrl: string;
+  cancellationToken?: string;
 }
 
 export async function sendBookingConfirmation(data: BookingConfirmationEmail) {
@@ -119,12 +120,31 @@ export async function sendBookingConfirmation(data: BookingConfirmationEmail) {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
                 <tr>
                   <td align="center">
-                    <a href="${data.receiptUrl}" style="display: inline-block; background-color: #D4AF37; color: #1a365d; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                    <a href="${data.receiptUrl}" style="display: inline-block; background-color: #D4AF37; color: #1a365d; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px; margin: 0 5px;">
                       View Receipt
                     </a>
                   </td>
                 </tr>
               </table>
+
+              ${data.cancellationToken ? `
+              <!-- Cancel/Reschedule Options -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+                <tr>
+                  <td align="center">
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">Need to make changes?</p>
+                    <div>
+                      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/appointments/reschedule?token=${data.cancellationToken}" style="display: inline-block; color: #1a365d; text-decoration: none; padding: 10px 24px; border: 2px solid #1a365d; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 0 5px;">
+                        Reschedule
+                      </a>
+                      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/appointments/cancel?token=${data.cancellationToken}" style="display: inline-block; color: #dc2626; text-decoration: none; padding: 10px 24px; border: 2px solid #dc2626; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 0 5px;">
+                        Cancel
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
 
               <!-- Reminder -->
               <p style="margin: 20px 0; color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">

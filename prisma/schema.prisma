@@ -93,6 +93,18 @@ model Appointment {
   paymentIntentId   String?
   paymentMethod     String?           // 'card', 'afterpay', etc.
 
+  // Mileage & Tax Deductions
+  mileageDeduction  Float?            // Calculated: distanceInMiles * IRS rate
+
+  // Reminders
+  reminder24hSent   Boolean           @default(false)
+  reminder24hSentAt DateTime?
+  reminder1hSent    Boolean           @default(false)
+  reminder1hSentAt  DateTime?
+
+  // Cancellation/Reschedule
+  cancellationToken String?           @unique // Secure token for cancel/reschedule links
+
   // Documents
   documents         Document[]
 

@@ -75,6 +75,17 @@ export async function POST(request: NextRequest) {
           const travelFee = 75; // Base travel fee
           const surcharges = totalAmount - baseFee - travelFee;
 
+          // Calculate distance (placeholder - will use actual calculation from pricing API)
+          // For now, estimate based on pricing
+          const estimatedDistance = 15; // miles (average)
+          const IRS_MILEAGE_RATE_2024 = 0.67; // $0.67 per mile
+          const mileageDeduction = estimatedDistance * IRS_MILEAGE_RATE_2024;
+
+          // Generate secure cancellation token
+          const cancellationToken = Buffer.from(
+            `${user.id}-${appointmentDate.getTime()}-${Math.random()}`
+          ).toString('base64url');
+
           // Create appointment
           const appointment = await prisma.appointment.create({
             data: {
@@ -98,6 +109,11 @@ export async function POST(request: NextRequest) {
               paymentStatus: 'COMPLETED',
               paymentIntentId: session.payment_intent as string,
               paymentMethod: session.payment_method_types?.[0] || 'card',
+              // NEW: Mileage tracking
+              distanceInMiles: estimatedDistance,
+              mileageDeduction: mileageDeduction,
+              // NEW: Cancellation token
+              cancellationToken: cancellationToken,
             },
           });
 
@@ -128,6 +144,7 @@ export async function POST(request: NextRequest) {
             numberOfSignatures,
             totalAmount,
             receiptUrl: `${process.env.NEXTAUTH_URL}/receipts/${appointment.id}`,
+            cancellationToken: cancellationToken,
           });
 
           // Send SMS notification
