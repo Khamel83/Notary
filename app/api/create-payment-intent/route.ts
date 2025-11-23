@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { z } from 'zod';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia',
-});
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured');
+  }
+
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-02-24.acacia',
+  });
+}
 
 const PaymentIntentSchema = z.object({
   amount: z.number().min(100), // Minimum $1.00
@@ -18,11 +24,22 @@ const PaymentIntentSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: 'Payment system is not configured. Please add STRIPE_SECRET_KEY to environment variables.' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const validated = PaymentIntentSchema.parse(body);
 
     // Convert dollars to cents
     const amountInCents = Math.round(validated.amount * 100);
+
+    // Get Stripe instance
+    const stripe = getStripe();
 
     const paymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount: amountInCents,
