@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  role          UserRole  @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  appointments  Appointment[]
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Appointment {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id])
+
+  // Scheduling
+  appointmentDate   DateTime
+  duration          Int               @default(30) // minutes
+  status            AppointmentStatus @default(PENDING)
+
+  // Location
+  serviceAddress    String
+  serviceCity       String
+  serviceZip        String
+  latitude          Float?
+  longitude         Float?
+  distanceInMiles   Float?
+
+  // Service Details
+  serviceType       ServiceType
+  numberOfSignatures Int             @default(1)
+  documentTypes     String[]
+  specialInstructions String?
+
+  // Pricing
+  baseFee           Float
+  travelFee         Float
+  surcharges        Json              // {afterHours: 50, weekend: 25, rush: 100}
+  totalAmount       Float
+
+  // Payment
+  paymentStatus     PaymentStatus     @default(PENDING)
+  paymentIntentId   String?
+  paymentMethod     String?           // 'card', 'afterpay', etc.
+
+  // Documents
+  documents         Document[]
+
+  // Compliance
+  journalEntry      JournalEntry?
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([appointmentDate])
+  @@index([status])
+  @@index([userId])
+}
+
+model Document {
+  id              String      @id @default(cuid())
+  appointmentId   String
+  appointment     Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  fileName        String
+  fileUrl         String
+  fileSize        Int
+  mimeType        String
+
+  // Document verification
+  uploadedAt      DateTime    @default(now())
+  verified        Boolean     @default(false)
+  verifiedAt      DateTime?
+
+  @@index([appointmentId])
+}
+
+model JournalEntry {
+  id                    String      @id @default(cuid())
+  appointmentId         String      @unique
+  appointment           Appointment @relation(fields: [appointmentId], references: [id])
+
+  // California Required Information
+  dateOfNotarization    DateTime
+  timeOfNotarization    String
+  typeOfNotarialAct     String
+  documentType          String
+  documentDate          String?
+
+  // Signer Information
+  signerName            String
+  signerAddress         String
+  identificationMethod  String      // "California Driver License", "Passport", etc.
+  identificationNumber  String
+  identificationIssuer  String
+
+  // Witness (if applicable)
+  witnessRequired       Boolean     @default(false)
+  witnessName           String?
+
+  // Fee
+  feeCharged            Float
+
+  // Additional Notes
+  notes                 String?
+
+  createdAt             DateTime    @default(now())
+
+  @@index([dateOfNotarization])
+}
+
+model NotaryAvailability {
+  id          String   @id @default(cuid())
+  dayOfWeek   Int      // 0-6 (Sunday-Saturday)
+  startTime   String   // "09:00"
+  endTime     String   // "17:00"
+  isAvailable Boolean  @default(true)
+
+  @@unique([dayOfWeek])
+}
+
+model BlockedDate {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model PricingRule {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+
+  // Base pricing
+  baseNotaryFee      Float @default(15.00)
+  baseTravelFee      Float @default(75.00)
+
+  // Distance-based
+  freeDistanceMiles  Float @default(10.00)
+  perMileFee         Float @default(0.50)
+  maxDistanceMiles   Float @default(50.00)
+
+  // Time-based surcharges
+  afterHoursSurcharge   Float @default(50.00)  // 6PM-9AM
+  weekendSurcharge      Float @default(25.00)  // Sat-Sun
+  holidaySurcharge      Float @default(100.00) // Major holidays
+
+  // Urgency surcharges
+  sameDaySurcharge      Float @default(50.00)  // Same day
+  twoHourSurcharge      Float @default(100.00) // Within 2 hours
+  emergencySurcharge    Float @default(150.00) // ASAP/Emergency
+
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum UserRole {
+  CLIENT
+  NOTARY
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ServiceType {
+  ACKNOWLEDGMENT
+  JURAT
+  OATH_AFFIRMATION
+  COPY_CERTIFICATION
+  SIGNATURE_WITNESSING
+  LOAN_SIGNING
+  MOBILE_SERVICE
+  EMERGENCY_SERVICE
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
