@@ -114,20 +114,92 @@ Click: "Save"
 
 ---
 
-## STEP 3: DEPLOY TO RAILWAY (15 minutes)
+## STEP 3: GET RESEND (EMAIL) - RECOMMENDED (5 minutes)
 
-### 3.1 Install Railway CLI
+**Why**: Customers expect email confirmations. FREE tier = 3,000 emails/month.
+
+### 3.1 Create Resend Account
+```
+1. Go to: https://resend.com/signup
+2. Sign up with GitHub or email
+3. Verify your email
+```
+
+### 3.2 Get API Key
+```
+1. Go to: https://resend.com/api-keys
+2. Click: "Create API Key"
+3. Name: "LA Mobile Notary Production"
+4. Click: "Add"
+5. Copy the API key (starts with re_...)
+6. Save it! (You can't see it again)
+```
+
+**✅ You now have:**
+- `RESEND_API_KEY=re_...`
+
+**Note**: For testing, use `onboarding@resend.dev` as sender. For production with custom domain, verify your domain in Resend.
+
+---
+
+## STEP 4: GET TWILIO (SMS) - RECOMMENDED (10 minutes)
+
+**Why**: SMS increases show-up rate by 30%. FREE trial = $15 credit (~1,900 SMS).
+
+### 4.1 Create Twilio Account
+```
+1. Go to: https://www.twilio.com/try-twilio
+2. Sign up (free trial)
+3. Verify your email and phone
+```
+
+### 4.2 Get Phone Number
+```
+1. In Twilio Console: https://console.twilio.com
+2. Click: "Get a Twilio phone number"
+3. Click: "Choose this number"
+4. Copy the phone number (format: +1XXXXXXXXXX)
+```
+
+### 4.3 Get API Credentials
+```
+1. Still in Console: https://console.twilio.com
+2. Find "Account Info" section
+3. Copy "Account SID" (starts with AC...)
+4. Copy "Auth Token" (click to reveal)
+```
+
+### 4.4 Verify Your Phone (Trial Requirement)
+```
+1. Go to: https://console.twilio.com/us1/develop/phone-numbers/manage/verified
+2. Click: "Add a new number"
+3. Enter YOUR phone number (for testing)
+4. Verify with code sent via SMS
+```
+
+**✅ You now have:**
+- `TWILIO_ACCOUNT_SID=AC...`
+- `TWILIO_AUTH_TOKEN=...`
+- `TWILIO_PHONE_NUMBER=+1XXXXXXXXXX`
+
+**Note**: Trial accounts can only send SMS to verified numbers. Upgrade to send to all numbers ($20 credit minimum).
+
+---
+
+## STEP 5: DEPLOY TO RAILWAY (15 minutes)
+
+### 5.1 Install Railway CLI
 ```bash
 npm install -g @railway/cli
 ```
 
-### 3.2 Login to Railway
+### 5.2 Login to Railway
 ```bash
 railway login
 ```
 *Browser will open. Sign up with GitHub. Close browser when done.*
 
-### 3.3 Initialize Project
+### 5.3 Initialize Project
 ```bash
 cd /home/user/Notary
 railway init
@@ -136,13 +208,13 @@ railway init
 - Project name: `la-mobile-notary`
 - Press Enter
 
-### 3.4 Add PostgreSQL Database
+### 5.4 Add PostgreSQL Database
 ```bash
 railway add --database postgres
 ```
 *This creates and links a PostgreSQL database. Railway auto-sets DATABASE_URL.*
 
-### 3.5 Set Environment Variables
+### 5.5 Set Environment Variables
 
 **Copy this ENTIRE block, replace YOUR_KEYS, then paste:**
 
@@ -160,6 +232,15 @@ railway variables set STRIPE_SECRET_KEY="sk_test_YOUR_KEY_HERE"
 # Google Maps (REPLACE WITH YOUR KEY)
 railway variables set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="AIza_YOUR_KEY_HERE"
 
+# Email - Resend (REPLACE WITH YOUR KEY)
+railway variables set RESEND_API_KEY="re_YOUR_KEY_HERE"
+railway variables set RESEND_FROM_EMAIL="LA Mobile Notary <onboarding@resend.dev>"
+
+# SMS - Twilio (REPLACE WITH YOUR KEYS)
+railway variables set TWILIO_ACCOUNT_SID="AC_YOUR_SID_HERE"
+railway variables set TWILIO_AUTH_TOKEN="YOUR_AUTH_TOKEN_HERE"
+railway variables set TWILIO_PHONE_NUMBER="+1XXXXXXXXXX"
+
 # Business Details (CUSTOMIZE)
 railway variables set NOTARY_NAME="LA Mobile Notary"
 railway variables set NOTARY_EMAIL="your@email.com"
@@ -175,7 +256,7 @@ railway variables set BASE_LOCATION_LNG="-118.2930"
 railway variables set NODE_ENV="production"
 ```
 
-### 3.6 DEPLOY! 🚀
+### 5.6 DEPLOY! 🚀
 ```bash
 railway up
 ```
@@ -184,7 +265,7 @@ railway up
 
 When complete, you'll see: ✓ Deployment successful
 
-### 3.7 Get Your Live URL
+### 5.7 Get Your Live URL
 ```bash
 railway open
 ```

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { sendBookingConfirmation } from '@/lib/email';
+import { sendBookingConfirmationSMS } from '@/lib/sms';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-12-18.acacia',
@@ -101,36 +103,40 @@ export async function POST(request: NextRequest) {
 
           console.log('Appointment created:', appointment.id);
 
-          // Send confirmation email (ready for email service integration)
-          await sendConfirmationEmail({
+          // Format date and time for notifications
+          const formattedDate = appointmentDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+
+          const formattedTime = appointmentDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+          });
+
+          // Send confirmation email
+          await sendBookingConfirmation({
             to: session.customer_email || '',
             name: metadata.full_name || 'Customer',
             appointmentId: appointment.id,
-            appointmentDate: appointmentDate.toLocaleString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit',
-            }),
+            appointmentDate: formattedDate,
+            appointmentTime: formattedTime,
             address: metadata.address || '',
             numberOfSignatures,
             totalAmount,
             receiptUrl: `${process.env.NEXTAUTH_URL}/receipts/${appointment.id}`,
           });
 
-          // Send SMS notification (ready for SMS service integration)
+          // Send SMS notification
           if (metadata.phone) {
-            await sendSMSConfirmation({
+            await sendBookingConfirmationSMS({
               to: metadata.phone,
               name: metadata.full_name || 'Customer',
-              appointmentDate: appointmentDate.toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-              }),
+              appointmentDate: formattedDate,
+              appointmentTime: formattedTime,
               confirmationCode: appointment.id.slice(0, 8).toUpperCase(),
             });
           }
@@ -209,78 +215,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Email notification function (ready for email service integration)
-// Use Resend (free tier: 3,000 emails/month) or SendGrid (free tier: 100 emails/day)
-async function sendConfirmationEmail(data: {
-  to: string;
-  name: string;
-  appointmentId: string;
-  appointmentDate: string;
-  address: string;
-  numberOfSignatures: number;
-  totalAmount: number;
-  receiptUrl: string;
-}) {
-  // TODO: Integrate with Resend or SendGrid
-  // Example with Resend (add to package.json: npm install resend)
-  /*
-  import { Resend } from 'resend';
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
-  await resend.emails.send({
-    from: 'LA Mobile Notary <noreply@yourdomain.com>',
-    to: data.to,
-    subject: `Appointment Confirmed - ${data.appointmentDate}`,
-    html: `
-      <h1>Booking Confirmed!</h1>
-      <p>Hi ${data.name},</p>
-      <p>Your mobile notary appointment is confirmed:</p>
-      <ul>
-        <li><strong>Date:</strong> ${data.appointmentDate}</li>
-        <li><strong>Location:</strong> ${data.address}</li>
-        <li><strong>Signatures:</strong> ${data.numberOfSignatures}</li>
-        <li><strong>Total Paid:</strong> $${data.totalAmount.toFixed(2)}</li>
-      </ul>
-      <p><a href="${data.receiptUrl}">View Receipt</a></p>
-      <p>We'll send you a reminder 24 hours before your appointment.</p>
-    `,
-  });
-  */
-
-  console.log('Email would be sent to:', data.to);
-  console.log('Appointment details:', {
-    date: data.appointmentDate,
-    address: data.address,
-    total: `$${data.totalAmount.toFixed(2)}`,
-  });
-}
-
-// SMS notification function (ready for Twilio integration)
-// Twilio free trial includes $15 credit
-async function sendSMSConfirmation(data: {
-  to: string;
-  name: string;
-  appointmentDate: string;
-  confirmationCode: string;
-}) {
-  // TODO: Integrate with Twilio
-  // Example with Twilio (add to package.json: npm install twilio)
-  /*
-  import twilio from 'twilio';
-  const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-  );
-
-  await client.messages.create({
-    body: `LA Mobile Notary: Booking confirmed for ${data.appointmentDate}. Confirmation: ${data.confirmationCode}. We'll see you soon!`,
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to: data.to,
-  });
-  */
-
-  console.log('SMS would be sent to:', data.to);
-  console.log('Message:', `Booking confirmed for ${data.appointmentDate}. Code: ${data.confirmationCode}`);
 }
