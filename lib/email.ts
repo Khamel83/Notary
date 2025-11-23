@@ -128,19 +128,17 @@ export async function sendBookingConfirmation(data: BookingConfirmationEmail) {
               </table>
 
               ${data.cancellationToken ? `
-              <!-- Cancel/Reschedule Options -->
+              <!-- Cancel Option -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
                 <tr>
                   <td align="center">
-                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">Need to make changes?</p>
-                    <div>
-                      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/appointments/reschedule?token=${data.cancellationToken}" style="display: inline-block; color: #1a365d; text-decoration: none; padding: 10px 24px; border: 2px solid #1a365d; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 0 5px;">
-                        Reschedule
-                      </a>
-                      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/appointments/cancel?token=${data.cancellationToken}" style="display: inline-block; color: #dc2626; text-decoration: none; padding: 10px 24px; border: 2px solid #dc2626; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 0 5px;">
-                        Cancel
-                      </a>
-                    </div>
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">Need to cancel?</p>
+                    <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/appointments/cancel?token=${data.cancellationToken}" style="display: inline-block; color: #dc2626; text-decoration: none; padding: 12px 32px; border: 2px solid #dc2626; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                      Cancel Appointment
+                    </a>
+                    <p style="margin: 10px 0 0; color: #9ca3af; font-size: 12px;">
+                      To reschedule, please cancel and create a new booking
+                    </p>
                   </td>
                 </tr>
               </table>

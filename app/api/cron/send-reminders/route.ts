@@ -14,9 +14,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // NOTE: All times are in UTC (server time and database)
+    // Appointments are stored in UTC, so comparison is timezone-agnostic
+    // Display times are formatted to local timezone when sent to customer
     const now = new Date();
     const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const in1Hour = new Date(now.getTime() + 60 * 60 * 1000);
+
+    console.log(`⏰ Cron running at: ${now.toISOString()}`);
+    console.log(`Looking for 24h reminders around: ${in24Hours.toISOString()}`);
+    console.log(`Looking for 1h reminders around: ${in1Hour.toISOString()}`);
 
     let remindersSent = 0;
     let errors = 0;

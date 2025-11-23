@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { sendBookingConfirmation } from '@/lib/email';
 import { sendBookingConfirmationSMS } from '@/lib/sms';
+import { calculateDistance, calculateMileageDeduction } from '@/lib/distance';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-02-24.acacia',
@@ -76,11 +77,15 @@ export async function POST(request: NextRequest) {
           const travelFee = 75; // Base travel fee
           const surcharges = totalAmount - baseFee - travelFee;
 
-          // Calculate distance (placeholder - will use actual calculation from pricing API)
-          // For now, estimate based on pricing
-          const estimatedDistance = 15; // miles (average)
-          const IRS_MILEAGE_RATE_2024 = 0.67; // $0.67 per mile
-          const mileageDeduction = estimatedDistance * IRS_MILEAGE_RATE_2024;
+          // Calculate actual distance using Google Maps API
+          const baseAddress = `${process.env.BASE_LOCATION_ZIP || '90027'}, Los Angeles, CA`;
+          const customerAddress = metadata.address || '';
+
+          const distanceResult = await calculateDistance(baseAddress, customerAddress);
+          const distanceInMiles = distanceResult.distanceInMiles;
+          const mileageDeduction = calculateMileageDeduction(distanceInMiles);
+
+          console.log(`📍 Distance: ${distanceInMiles} miles, Deduction: $${mileageDeduction}`);
 
           // Generate secure cancellation token
           const cancellationToken = Buffer.from(
@@ -110,10 +115,10 @@ export async function POST(request: NextRequest) {
               paymentStatus: 'COMPLETED',
               paymentIntentId: session.payment_intent as string,
               paymentMethod: session.payment_method_types?.[0] || 'card',
-              // NEW: Mileage tracking
-              distanceInMiles: estimatedDistance,
+              // Mileage tracking (actual calculated distance)
+              distanceInMiles: distanceInMiles,
               mileageDeduction: mileageDeduction,
-              // NEW: Cancellation token
+              // Cancellation token
               cancellationToken: cancellationToken,
             },
           });
