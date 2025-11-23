@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia',
-});
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured');
+  }
+
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-02-24.acacia',
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { amount, appointmentDetails } = body;
+
+    // Check if Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: 'Payment system is not configured. Please add STRIPE_SECRET_KEY to environment variables.' },
+        { status: 503 }
+      );
+    }
 
     // Validate amount
     if (!amount || amount < 1) {
@@ -31,6 +45,9 @@ export async function POST(request: NextRequest) {
 
     // Format appointment date for Stripe metadata
     const appointmentDateTime = `${appointmentDetails.date} ${appointmentDetails.time}`;
+
+    // Get Stripe instance
+    const stripe = getStripe();
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
