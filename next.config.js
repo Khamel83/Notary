@@ -8,6 +8,12 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  // Allow external access
+  async rewrites() {
+    return [];
+  },
+  // Enable standalone output for Docker
+  output: 'standalone',
 }
 
 module.exports = nextConfig
