@@ -2,6 +2,9 @@
 builder = "NIXPACKS"
 buildCommand = "npx prisma generate && npm run build"
 
+[nixpacks]
+node-version = "20"
+
 [deploy]
 startCommand = "npm run start"
 healthcheckPath = "/"
