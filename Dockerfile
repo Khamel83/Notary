@@ -7,10 +7,10 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Install all dependencies (including dev dependencies for build tools)
 COPY package.json package-lock.json* ./
 COPY .npmrc ./
-RUN npm ci --omit=dev --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -21,6 +21,13 @@ COPY .npmrc ./
 
 # Generate Prisma client and build the application
 RUN npx prisma generate && npm run build
+
+# Production dependencies stage
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+COPY .npmrc ./
+RUN npm ci --omit=dev --legacy-peer-deps
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -38,6 +45,9 @@ COPY --from=builder /app/public ./public
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
+
+# Copy production dependencies
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
