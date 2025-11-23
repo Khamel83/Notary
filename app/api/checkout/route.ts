@@ -18,8 +18,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate required fields
+    if (!appointmentDetails.email || !appointmentDetails.date || !appointmentDetails.address) {
+      return NextResponse.json(
+        { error: 'Missing required appointment details' },
+        { status: 400 }
+      );
+    }
+
     // Convert to cents
     const amountInCents = Math.round(amount * 100);
+
+    // Format appointment date for Stripe metadata
+    const appointmentDateTime = `${appointmentDetails.date} ${appointmentDetails.time}`;
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -31,8 +42,8 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: 'Mobile Notary Service',
-              description: `${appointmentDetails.numberOfSignatures} signature(s) - ${appointmentDetails.date}`,
-              images: [], // Add your logo URL here
+              description: `${appointmentDetails.numberOfSignatures} signature(s) - ${appointmentDetails.date} at ${appointmentDetails.time}`,
+              images: [], // Add your logo URL here when you have one
             },
             unit_amount: amountInCents,
           },
@@ -43,11 +54,23 @@ export async function POST(request: NextRequest) {
       cancel_url: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/book/confirm`,
       customer_email: appointmentDetails.email,
       metadata: {
-        appointment_date: appointmentDetails.date,
-        address: appointmentDetails.address,
+        // Appointment details
+        appointment_date: appointmentDateTime,
+        address: `${appointmentDetails.address}, ${appointmentDetails.city}, ${appointmentDetails.zip}`,
+        zip: appointmentDetails.zip || '',
         signatures: appointmentDetails.numberOfSignatures.toString(),
+        urgency: appointmentDetails.urgency || 'standard',
+
+        // Customer details
         full_name: appointmentDetails.fullName || '',
         phone: appointmentDetails.phone || '',
+
+        // Special instructions
+        special_instructions: appointmentDetails.specialInstructions || '',
+
+        // For accounting and tracking
+        booking_source: 'web',
+        created_at: new Date().toISOString(),
       },
       // Afterpay requires shipping address (even for services)
       shipping_address_collection: {
