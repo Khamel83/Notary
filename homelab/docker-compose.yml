@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: notary-postgres
+    environment:
+      POSTGRES_DB: notary
+      POSTGRES_USER: ${DB_USER:-notary_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-notary_user} -d notary"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    container_name: notary-pgbouncer
+    environment:
+      DATABASES_HOST: postgres
+      DATABASES_PORT: 5432
+      DATABASES_USER: ${DB_USER:-notary_user}
+      DATABASES_PASSWORD: ${DB_PASSWORD}
+      DATABASES_DBNAME: notary
+      DATABASES_AUTH_USER: ${DB_USER:-notary_user}
+      DATABASES_AUTH_PASSWORD: ${DB_PASSWORD}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 20
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      SERVER_RESET_QUERY: DISCARD ALL
+      ADMIN_USERS: ${DB_USER:-notary_user}
+      STATS_USERS: ${DB_USER:-notary_user}
+    ports:
+      - "${PGBOUNCER_PORT:-6432}:6432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U ${DB_USER:-notary_user}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: PostgREST for direct API access to database
+  postgrest:
+    image: postgrest/postgrest:latest
+    container_name: notary-postgrest
+    environment:
+      PGRST_DB_URI: postgres://${DB_USER:-notary_user}:${DB_PASSWORD}@postgres:5432/notary
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: ${DB_USER:-notary_user}
+      PGRST_SERVER_PROXY_URI: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - extras
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: notary-network

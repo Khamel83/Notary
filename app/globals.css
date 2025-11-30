@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&family=Roboto+Slab:wght@300;400;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -14,8 +14,18 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-gradient-to-br from-sky-50 via-white to-gold-50 text-gray-900 antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* LA-inspired font family for headings */
+  .la-heading {
+    font-family: 'Bebas Neue', 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  .la-subheading {
+    font-family: 'Roboto Slab', 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   /* Improve focus visibility for accessibility */
@@ -310,15 +320,41 @@
   }
 
   .gradient-navy {
-    @apply bg-gradient-to-r from-navy-900 to-navy-700;
+    @apply bg-gradient-to-r from-navy-900 via-navy-800 to-sky-900;
   }
 
   .gradient-gold {
-    @apply bg-gradient-to-r from-gold-500 to-gold-600;
+    @apply bg-gradient-to-r from-gold-400 via-gold-500 to-amber-500;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-navy-900 to-sky-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-navy-900 via-sky-700 to-gold-600;
+  }
+
+  /* LA-themed gradients */
+  .gradient-la {
+    @apply bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-700;
+  }
+
+  .gradient-sunset {
+    @apply bg-gradient-to-r from-orange-400 via-pink-500 to-purple-600;
+  }
+
+  .gradient-ocean {
+    @apply bg-gradient-to-r from-sky-400 via-blue-500 to-navy-600;
+  }
+
+  .gradient-palm {
+    @apply bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600;
+  }
+
+  /* LA text styling */
+  .text-la-sunset {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-red-500 to-pink-500;
+  }
+
+  .text-la-ocean {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700;
   }
 
   /* Scrollbar styling */

@@ -1,39 +1,140 @@
-# LA Mobile Notary Platform
+# Notary Platform - Vercel + Homelab Setup
 
-A full-service web application for operating a modern mobile notary business in Los Angeles, California.
+**Status**: 🔄 Ready for Vercel Deployment
+**Current Tier**: Homelab PostgreSQL + Vercel Serverless
+**Upgrade Trigger**: > 50 appointments/day
 
-## Features
+## 🎯 What This Does
+
+A modern mobile notary platform that handles:
+- Online booking and scheduling
+- Distance-based pricing with Google Maps
+- Stripe payment processing (cards + Afterpay)
+- Automated SMS/email reminders
+- California compliance tracking
+- Real-time availability management
+
+## 🚀 Quick Start
+
+### 1. Setup Homelab Database
+```bash
+cd homelab
+cp .env.example .env
+# Edit .env with your secure password
+./scripts/setup.sh
+```
+
+### 2. Setup Vercel with SOPS Secrets
+```bash
+# Clone secrets vault if not already done
+git clone git@github.com:Khamel83/secrets-vault.git ~/github/secrets-vault
+
+# Decrypt your project secrets
+sops --decrypt ~/github/secrets-vault/secrets.env.encrypted > .env
+
+# Deploy to Vercel
+npm i -g vercel
+vercel --prod
+```
+
+## 🗄️ Architecture
+
+### Frontend
+- **Next.js 14** with App Router
+- **React 18** with TypeScript
+- **Tailwind CSS** for styling
+- **Server-side rendering** for performance
+
+### Backend
+- **Vercel Serverless Functions** (API routes)
+- **Prisma ORM** with PostgreSQL
+- **NextAuth.js** for authentication
+- **Stripe** for payment processing
+
+### Database (Homelab)
+- **PostgreSQL 15** with connection pooling
+- **PgBouncer** for serverless efficiency
+- **Automated backups** with 30-day retention
+- **Health monitoring** and alerts
+
+### External Services
+- **Stripe** - Payment processing
+- **Google Maps API** - Distance calculations
+- **Resend** - Email notifications
+- **Twilio** - SMS notifications
+
+## 🔧 Development
+
+### Local Development
+```bash
+# Start homelab database
+cd homelab && docker-compose up -d
+
+# Setup environment
+sops --decrypt ~/github/secrets-vault/secrets.env.encrypted > .env
+
+# Initialize database
+npx prisma generate && npx prisma db push
+
+# Start development server
+npm run dev
+```
+
+### Environment Variables (SOPS Managed)
+All secrets managed via SOPS encrypted vault:
+- Database connections
+- API keys (Stripe, Google Maps, etc.)
+- Email/SMS service credentials
+- Authentication secrets
+
+### Key Benefits of SOPS
+- ✅ **Single source of truth**: One encrypted vault for all projects
+- ✅ **Git-friendly**: Commit encrypted files safely
+- ✅ **Team collaboration**: Share vault, not individual secrets
+- ✅ **Audit trail**: Git history of encrypted changes
+
+## 📊 Features
 
 ### For Clients
-- **Real-time Pricing Calculator** - Instant quotes based on location, time, and urgency
-- **Online Booking** - Schedule appointments 24/7 with instant confirmation
-- **Flexible Payments** - Pay with credit card or split into 4 payments with Afterpay
-- **Service Tracking** - Real-time updates on appointment status
-- **Mobile-Friendly** - Responsive design works on all devices
+- **Real-time Pricing Calculator** - Instant quotes based on location and time
+- **Online Booking** - Schedule appointments 24/7 with confirmation
+- **Flexible Payments** - Credit cards or Afterpay (4 payments)
+- **Service Tracking** - Real-time appointment status updates
+- **Mobile-Responsive** - Works on all devices
 
 ### For Notary Operator
-- **Dashboard** - View and manage all appointments
-- **Calendar Integration** - Sync with Google Calendar
-- **Automated Pricing** - Dynamic pricing based on California regulations
-- **Document Management** - Upload and manage client documents
-- **Journal Compliance** - California-compliant digital journal entries
-- **Payment Tracking** - Real-time payment status and reporting
+- **Dashboard** - Manage all appointments and clients
+- **Automated Reminders** - SMS/email notifications
+- **Document Management** - Upload and verify client documents
+- **Journal Compliance** - California-required notary journal
+- **Payment Tracking** - Real-time payment status
 
 ### California Compliance
-- Maximum $15/signature (CA legal limit)
+- $15 maximum per signature (CA legal limit)
 - Required journal entries for all notarizations
-- Proper identification verification tracking
+- Identification verification tracking
 - Secure document storage
-- Audit trail for all transactions
+- Complete audit trail
 
-## Tech Stack
+## 💰 Pricing Model
 
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, Prisma ORM
-- **Database**: PostgreSQL
-- **Payments**: Stripe with Afterpay integration
-- **Hosting**: Railway
-- **Authentication**: NextAuth.js
+### Base Fees
+- **Notary Fee**: $15 per signature (California maximum)
+- **Travel Fee**: $75 base mobile service fee
+- **Distance**: First 10 miles free, then $0.50/mile
+
+### Surcharges
+- **After Hours** (6PM-9AM): +$50
+- **Weekend** (Sat-Sun): +$25
+- **Holidays**: +$100
+- **Same Day**: +$50
+- **Within 2 Hours**: +$100
+- **Emergency/ASAP**: +$150
+
+### Service Area
+- Base Location: Thai Town, Los Angeles (90027)
+- Coverage: All of LA County
+- Maximum Distance: 50 miles from base
 
 ## Pricing Model
 

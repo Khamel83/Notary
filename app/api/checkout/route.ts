@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
+import { withApiHandler, ValidationError, ApiError } from '@/lib/api-wrapper';
 
-function getStripe() {
+function getStripe(): Stripe {
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY is not configured');
+    throw new ApiError('Payment system is not configured. Please add STRIPE_SECRET_KEY to environment variables.', 503);
   }
 
   return new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -11,33 +12,50 @@ function getStripe() {
   });
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { amount, appointmentDetails } = body;
+interface AppointmentDetails {
+  email: string;
+  date: string;
+  time: string;
+  address: string;
+  city: string;
+  zip?: string;
+  numberOfSignatures: number;
+  urgency?: string;
+  fullName?: string;
+  phone?: string;
+  specialInstructions?: string;
+}
 
-    // Check if Stripe is configured
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json(
-        { error: 'Payment system is not configured. Please add STRIPE_SECRET_KEY to environment variables.' },
-        { status: 503 }
-      );
-    }
+interface CheckoutRequest {
+  amount: number;
+  appointmentDetails: AppointmentDetails;
+}
+
+export async function POST(request: NextRequest) {
+  return withApiHandler(async () => {
+    const body = await request.json();
+    const { amount, appointmentDetails }: CheckoutRequest = body;
 
     // Validate amount
     if (!amount || amount < 1) {
-      return NextResponse.json(
-        { error: 'Invalid amount' },
-        { status: 400 }
-      );
+      throw new ValidationError('Invalid amount. Amount must be at least $1.', 'amount');
     }
 
     // Validate required fields
-    if (!appointmentDetails.email || !appointmentDetails.date || !appointmentDetails.address) {
-      return NextResponse.json(
-        { error: 'Missing required appointment details' },
-        { status: 400 }
-      );
+    if (!appointmentDetails.email) {
+      throw new ValidationError('Email is required', 'appointmentDetails.email');
+    }
+    if (!appointmentDetails.date) {
+      throw new ValidationError('Appointment date is required', 'appointmentDetails.date');
+    }
+    if (!appointmentDetails.address) {
+      throw new ValidationError('Service address is required', 'appointmentDetails.address');
+    }
+    if (!appointmentDetails.city) {
+      throw new ValidationError('City is required', 'appointmentDetails.city');
+    }
+    if (!appointmentDetails.numberOfSignatures || appointmentDetails.numberOfSignatures < 1) {
+      throw new ValidationError('Number of signatures must be at least 1', 'appointmentDetails.numberOfSignatures');
     }
 
     // Convert to cents
@@ -67,13 +85,13 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/book/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/book/confirm`,
+      success_url: `${process.env.NEXTAUTH_URL || 'https://notary.vercel.app'}/book/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXTAUTH_URL || 'https://notary.vercel.app'}/book/confirm`,
       customer_email: appointmentDetails.email,
       metadata: {
         // Appointment details
         appointment_date: appointmentDateTime,
-        address: `${appointmentDetails.address}, ${appointmentDetails.city}, ${appointmentDetails.zip}`,
+        address: `${appointmentDetails.address}, ${appointmentDetails.city}, ${appointmentDetails.zip || ''}`,
         zip: appointmentDetails.zip || '',
         signatures: appointmentDetails.numberOfSignatures.toString(),
         urgency: appointmentDetails.urgency || 'standard',
@@ -88,6 +106,7 @@ export async function POST(request: NextRequest) {
         // For accounting and tracking
         booking_source: 'web',
         created_at: new Date().toISOString(),
+        vercel_region: process.env.VERCEL_REGION || 'unknown',
       },
       // Afterpay requires shipping address (even for services)
       shipping_address_collection: {
@@ -96,20 +115,10 @@ export async function POST(request: NextRequest) {
       billing_address_collection: 'required',
     });
 
-    return NextResponse.json({
-      success: true,
+    return {
       sessionId: session.id,
       url: session.url,
-    });
-  } catch (error: any) {
-    console.error('Checkout session error:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.message || 'Failed to create checkout session',
-      },
-      { status: 500 }
-    );
-  }
+      paymentStatus: session.payment_status,
+    };
+  }, request);
 }

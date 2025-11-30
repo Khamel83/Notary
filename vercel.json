@@ -1,8 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/send-reminders",
-      "schedule": "*/30 * * * *"
-    }
-  ]
-}
+{"name": "notary-platform", "framework": "nextjs"}
