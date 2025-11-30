@@ -64,7 +64,7 @@ export default function PricingPage() {
 
               <div>
                 <label className="label">
-                  Distance from Thai Town (miles)
+                  Distance from Silver Lake (miles)
                 </label>
                 <input
                   type="number"
