@@ -51,13 +51,11 @@ export default function TrustBadges() {
         <div className="text-center">
           <div className="flex justify-center mb-1">
             <svg className="w-7 h-7 text-gold-600" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l12 7.24l3.91 7.24l5.84 3.97L6 17.27z"/>
-              <path d="M5.84 3.97L3.91 7.24 2 9.24l12 7.24L7.64 3.97z"/>
-              <path d="M12 1.97l7.53 3.52 1.5 1.5 1.5-7.54-1.52L12 1.97z"/>
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.38-.64L12 2 9.38 8.76 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>
           </div>
-          <span className="font-bold text-navy-900">Verified Reviews</span>
-          <span className="text-xs text-gray-600">5★+ Rated</span>
+          <span className="font-bold text-navy-900">Trusted Since 2023</span>
+          <span className="text-xs text-gray-600">10/5 Stars* <span className="text-gray-400 text-xs">*(You should never trust a site's internal rating system)</span></span>
         </div>
       </div>
 

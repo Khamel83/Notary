@@ -8,7 +8,6 @@ export interface ValidationResult {
   suggestion?: string;
 }
 
-// Email validation with real-time feedback
 // LA-themed ZIP code history lookup - what was it like in 2007
 const getZipCodeJoke = (zip: string): string | null => {
   const zipJokes: Record<string, string> = {
@@ -16,7 +15,6 @@ const getZipCodeJoke = (zip: string): string | null => {
     '90028': 'Hollywood! Were you clubbing at Les Deux in 2007?',
     '90027': 'Los Feliz! You were drinking at The Derby before it was cool in 2007!',
     '90026': 'Silver Lake! You were definitely at Spaceland in 2007!',
-    '90028': 'Hollywood! Late night at Cinespace in 2007?',
     '90036': 'Mid-Wilshire! Running to The Grove like everyone else in 2007!',
     '90048': 'Mid-City! You were stuck in traffic on Olympic in 2007!',
     '90019': 'Mid-Wilshire! The Grove was your mall in 2007!',
@@ -31,21 +29,21 @@ const getZipCodeJoke = (zip: string): string | null => {
 
     // Beverly Hills & surrounding
     '90210': 'Beverly Hills! Shopping at Rodeo Drive in 2007?',
-    '90211': 'Beverly Hills! Partying at Greystone Manor in 2007!',
-    '90212': 'Beverly Hills! Probably saw celebs at The Ivy in 2007!',
+    '90211': 'Beverly Hills! Partying at Greystone Manor in 2007?',
+    '90212': 'Beverly Hills! Probably saw celebs at The Ivy in 2007?',
 
     // The Valley
     '91423': 'Calabasas! You were ahead of the Kardashians in 2007!',
     '91316': 'Granada Hills! Valley Girl/Boy in 2007 - totally!',
-    '91325': 'Northridge! CSUN or Northridge Mall in 2007?',
+    '91325': 'Northridge! Were you at CSUN in 2007?',
     '91326': 'Porter Ranch! The outskirts even in 2007!',
-    '91362': 'Valencia! Six Flags Magic Mountain in 2007!',
+    '91362': 'Valencia! Magic Mountain was your neighbor in 2007!',
     '91355': 'Saugus! Also Six Flags, but further out in 2007!',
 
     // Eastside & Northeast LA
     '90065': 'Highland Park! York Blvd before it was gentrified in 2007!',
     '90041': 'Eagle Rock! The Eagles were your high school in 2007!',
-    '90042': 'Highland Park! You were at Figueroa before the Gold Line in 2007!',
+    '90042': 'Highland Park! You were at Figueroa before Gold Line in 2007!',
     '90031': 'Lincoln Heights! Chinatown New Year in 2007?',
     '90032': 'El Sereno! Seriously out there in 2007!',
     '90033': 'Boyle Heights! Mariachi Plaza in 2007!',
@@ -68,7 +66,6 @@ const getZipCodeJoke = (zip: string): string | null => {
     // Hollywood Hills
     '90046': 'Los Angeles! Franklin Village in 2007!',
     '90068': 'Hollywood! Lake Hollywood Park in 2007!',
-    '90028': 'Hollywood! Hollywood & Highland just opened in 2007!',
     '90038': 'Hollywood! Thai Town was your spot in 2007!',
 
     // West Hollywood
@@ -100,6 +97,7 @@ const getZipCodeJoke = (zip: string): string | null => {
   return zipJokes[zip] || null;
 };
 
+// Email validation with LA-themed real-time feedback
 export function validateEmail(email: string): ValidationResult {
   if (!email.trim()) {
     return { isValid: false, message: 'Email is required - even in LA we need to reach you!' };
@@ -208,7 +206,7 @@ export function validateEmail(email: string): ValidationResult {
 
   // More comprehensive checks
   const localPart = email.split('@')[0];
-  const domain = email.split('@')[1];
+  const fullDomain = email.split('@')[1];
 
   // Local part validation
   if (localPart.length < 1) {
@@ -220,27 +218,12 @@ export function validateEmail(email: string): ValidationResult {
   }
 
   // Domain validation
-  if (domain.length < 4) {
+  if (fullDomain && fullDomain.length < 4) {
     return { isValid: false, message: 'Domain seems too short' };
   }
 
-  if (!domain.includes('.')) {
+  if (fullDomain && !fullDomain.includes('.')) {
     return { isValid: false, message: 'Domain must include a dot (.)' };
-  }
-
-  // Common typo detection
-  const commonDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com'];
-  const domainLower = domain.toLowerCase();
-
-  for (const commonDomain of commonDomains) {
-    if (domainLower.includes(commonDomain.replace('.', '')) ||
-        domainLower.includes(commonDomain.split('.')[0]) && domainLower.length === commonDomain.length + 1) {
-      return {
-        isValid: false,
-        message: `Did you mean @${commonDomain}?`,
-        suggestion: `Try correcting the domain to @${commonDomain}`
-      };
-    }
   }
 
   return { isValid: true };
@@ -298,7 +281,7 @@ export function validatePhone(phone: string): ValidationResult {
 
     // All same digits
     if (/^(\d)\1{9}$/.test(digitsOnly)) {
-      return { isValid: false, message: 'Phone number cannot be all the same digit' };
+      return { isValid: false, message: 'Phone number cannot be all same digit' };
     }
   }
 
@@ -375,14 +358,17 @@ export function createPersonalityProfile(email?: string, zip?: string, phone?: s
       jokes.push('Hotmail OG! You\'ve been digital since dial-up!');
       score += 3;
     } else if (domain === 'aol.com') {
-      jokes.push('AOL! "You\'ve got mail!" - straight out of 2007!');
+      jokes.push('AOL! "You\'ve got mail!" - straight out of 2007, we love it!');
       score += 4;
-    } else if (domain?.endsWith('.edu')) {
+    } else if (domain.endsWith('.edu')) {
       jokes.push('.edu! Student or overpaid administrator?');
       score += 3;
-    } else if (domain?.endsWith('.gov')) {
+    } else if (domain.endsWith('.gov')) {
       jokes.push('.gov! Working for the city? LA County needs notaries!');
       score += 2;
+    } else if (domain.endsWith('.org')) {
+      jokes.push('.org! Making LA better one document at a time!');
+      score += 3;
     } else if (domain && !domain.endsWith('.com') && !['gmail', 'yahoo', 'hotmail', 'outlook', 'aol'].some(d => domain.includes(d))) {
       jokes.push(`${domain.split('.').pop()?.toUpperCase()}! Fancy! You\'re too cool for .com!`);
       score += 4;
@@ -420,7 +406,7 @@ export function createPersonalityProfile(email?: string, zip?: string, phone?: s
       '909': '909! Inland Empire in 2007 - Ontario Mills outlet runs!',
       '714': '714! Orange County in 2007 - Disneyland Local 8 days a week!',
       '949': '949! South OC in 2007 - Newport Beach life!',
-      '951': '951! Riverside in 2007 - IE was the place to be!',
+      '951': '951! Riverside in 2007 - IE was place to be!',
       '619': '619! San Diego in 2007 - SoCal border life!'
     };
 
@@ -440,7 +426,7 @@ export function createPersonalityProfile(email?: string, zip?: string, phone?: s
   // Generate description
   let description = '';
   if (level === 'premium') {
-    description = 'Wow! You\'re maximum LA - you\'ve got the email, the ZIP, and the area code! Total authenticity!';
+    description = 'Wow! You\'re maximum LA - you\'ve got the email, ZIP, and area code! Total authenticity!';
   } else if (level === 'enhanced') {
     description = 'Nice! You\'re showing some serious LA credibility - we see you!';
   } else {
