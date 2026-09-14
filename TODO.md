@@ -1,4 +1,4 @@
 <!-- janitor:begin:todo -->
-- Maintain and verify build and deployment setups across environments.
-- Monitor Node.js, Next.js, and dependency compatibility for deployment.
+- Maintain dependency compatibility and Node/Railway deployment configurations
+- Continue implementation of LA-themed features and UX enhancements
 <!-- janitor:end:todo -->
