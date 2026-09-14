@@ -1,7 +1,11 @@
 <!-- janitor:begin:recent -->
-- Added Homelab project contract (`3bb8fd045d6dd56956be3e5bbccd4b3e6508255b`).
-- Bootstrapped LLM-OVERVIEW files (`4e35298f96a24a554eeec8f506a17892228708f1`).
-- Updated location from Thai Town to East Side LGBT-friendly area (`8c4a40184b4c9db356afe5de0de59d158f339886`).
-- Added LA-themed enhancements with rating system joke and comprehensive validation (`09a8da1821aab3a5f85fa4605daaff096ef5ede3`).
-- Added LA-themed personality and UX improvements (`c5098e91c388e4c40610e9034ae8808db1533197`).
+- Added Homelab project contract (`3bb8fd0`)
+- Bootstrapped LLM-OVERVIEW files (`4e35298`)
+- Updated location from Thai Town to East Side LGBT-friendly area (`8c4a401`)
+- Added LA-themed enhancements with rating system joke and validation (`09a8da1`)
+- Added LA-themed personality and UX improvements (`c5098e9`)
+- Fixed Stripe initialization and SSL compatibility build errors (`bbb0fb9`, `c9123b7`)
+- Downgraded `resend` package and updated package lock for Node.js 18 compatibility (`23a8430`, `1b31567`)
+- Downgraded to proven stable versions for Railway compatibility (`cc33196`)
+- Fixed Next.js 15 API route type error for dynamic routes (`4f9a463`)
 <!-- janitor:end:recent -->
