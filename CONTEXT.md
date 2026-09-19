@@ -1,11 +1,22 @@
 <!-- janitor:begin:recent -->
-- Added Homelab project contract (`3bb8fd0`)
-- Bootstrapped LLM-OVERVIEW files (`4e35298`)
-- Updated location from Thai Town to East Side LGBT-friendly area (`8c4a401`)
-- Added LA-themed enhancements with rating system joke and validation (`09a8da1`)
-- Added LA-themed personality and UX improvements (`c5098e9`)
-- Fixed Stripe initialization and SSL compatibility build errors (`bbb0fb9`, `c9123b7`)
-- Downgraded `resend` package and updated package lock for Node.js 18 compatibility (`23a8430`, `1b31567`)
-- Downgraded to proven stable versions for Railway compatibility (`cc33196`)
-- Fixed Next.js 15 API route type error for dynamic routes (`4f9a463`)
+- `e478a375eaa0c5dfe37f8f4bd2db98eab24ca1bf`: Merge pull request #2 from Khamel83/vercel/react-server-components-cve-vu-zugzn3
+- `3bb8fd045d6dd56956be3e5bbccd4b3e6508255b`: chore: add Homelab project contract
+- `4e35298f96a24a554eeec8f506a17892228708f1`: chore: bootstrap LLM-OVERVIEW files 2026-05-10
+- `b44f8606595d752703f8a038683a13e4cd3b9e84`: Fix React Server Components CVE vulnerabilities
+- `8c4a40184b4c9db356afe5de0de59d158f339886`: Update location from Thai Town to East Side LGBT-friendly area
+- `09a8da1821aab3a5f85fa4605daaff096ef5ede3`: Add LA-themed enhancements with rating system joke and comprehensive validation
+- `c5098e91c388e4c40610e9034ae8808db1533197`: Add LA-themed personality and UX improvements
+- `bbb0fb9791bc38589aaa319dc12c61143f865193`: Fix build errors: Stripe initialization and SSL compatibility
+- `c9123b7ade697d1db714b1d126c1dc48c61da586`: Fix build error: Move Stripe initialization to runtime
+- `23a843058068ce0f41964253e86e6d60c78869c2`: Update package-lock.json for resend downgrade
+- `1b31567a96e20a37f3c2b5df3916c7383f140266`: Downgrade resend package for Node.js 18 compatibility
+- `cc331968d89107c566080ec0f8803d286d573cc5`: Downgrade to proven stable versions for Railway compatibility
+- `4f9a463f6f3ac35d2c8c891df70bd9863ec333a6`: Fix Next.js 15 API route type error for dynamic routes
+- `569675e89d59e57f31c214c1ef14e1e185bf4001`: Simplify Dockerfile by removing problematic postinstall script
+- `520cabeacbe2bfffef926e7a914f45d4e8a96e6b`: Fix Dockerfile multi-stage build for proper dependency management
+- `0f749edc989920c6d3669d08bb003c9aa6ce1e56`: Fix Dockerfile to use legacy-peer-deps for dependency resolution
+- `f15b47ca3dddb493ac89c3335891215c89b533af`: Complete Railway deployment configuration with Dockerfile
+- `d0cb50c54819ef30e7146f0a13993f9db27fcb35`: Fix Railway Node.js version to 20 for resend compatibility
+- `632fa147860029d0d3933878a626cd515c4df9b1`: Force new Railway build with .npmrc fix
+- `5d36971545d898f997d02cd85d97d76a75faf931`: Fix Railway deployment by enabling legacy-peer-deps in .npmrc
 <!-- janitor:end:recent -->
