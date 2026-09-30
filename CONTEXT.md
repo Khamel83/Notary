@@ -20,3 +20,12 @@
 - `632fa147860029d0d3933878a626cd515c4df9b1`: Force new Railway build with .npmrc fix
 - `5d36971545d898f997d02cd85d97d76a75faf931`: Fix Railway deployment by enabling legacy-peer-deps in .npmrc
 <!-- janitor:end:recent -->
+
+## September 30 publication boundary
+
+The actual remote default is the long-lived `claude/notary-platform-setup-014k1bMk5wVHjNgWABdsridd`
+branch, not an assumed main/master name. PR #7 corrects its shared fresh-source
+rule accordingly. Read-only existing Vercel build logs show missing preview
+`DATABASE_URL` during route collection. This does not establish an authorized
+preview database or live production placement. No runtime, credential, billing,
+or access change is made by this documentation repair.

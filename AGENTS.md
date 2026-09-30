@@ -37,3 +37,15 @@ or catalog entry) are part of the change. Never leave a "remember to run X"
 step for the owner; if something truly needs the owner, write it in
 `HANDOFF.md` as a blocker with the exact command.
 <!-- janitor:end:working-docs -->
+<!-- janitor:begin:fresh-source -->
+## Start from the current remote branch
+
+At the start of repository work, run `git fetch origin` and discover the actual
+default branch with `git ls-remote --symref origin HEAD`; do not assume its name.
+Start each new branch or
+worktree from the fetched `origin/<default>` commit. If fetch fails, report
+that source freshness is unknown before starting new changes. Preserve a dirty,
+diverged, or active checkout; use a separate worktree for new work instead of
+moving its branch or files. Check the fetched source commit again before a
+release or a claim that source is current.
+<!-- janitor:end:fresh-source -->
